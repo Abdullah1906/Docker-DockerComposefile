@@ -1,5 +1,5 @@
 BPS (.NET 8 Backend + Angular 20 Frontend) ধরে practical CI/CD + Docker Compose workflow
-
+```text
 1. Final Architecture
                     DEVELOPER
                         │
@@ -32,9 +32,9 @@ BPS (.NET 8 Backend + Angular 20 Frontend) ধরে practical CI/CD + Docker Co
                         ▼
                  ┌─────────────┐
                  │   AWS EC2   │
-                 │              │
-                 │ docker       │
-                 │ compose      │
+                 │             │
+                 │ docker      │
+                 │ compose     │
                  └──────┬──────┘
                         │
              docker compose pull
@@ -44,15 +44,16 @@ BPS (.NET 8 Backend + Angular 20 Frontend) ধরে practical CI/CD + Docker Co
           │      BPS Containers      │
           │                          │
           │ Angular/Nginx            │
-          │ .NET API                │
-          │ Redis                   │
+          │ .NET API                 │
+          │ Redis                    │
           │ RabbitMQ                 │
           │ SQL Server               │
           └──────────────────────────┘
+```
 2. Project Structure
 
 GitHub repository এমন :
-
+```text
 BPS/
 │
 ├── Backend/
@@ -73,6 +74,7 @@ BPS/
 └── .github/
     └── workflows/
         └── deploy.yml
+```
 3. Backend Dockerfile
 
 Backend/Dockerfile
@@ -600,6 +602,7 @@ Docker Compose নতুন image দিয়ে container recreate করবে�
 14. Final deployment flow
 
 পুরো বিষয়টা মনে রাখার জন্য:
+```text
 
                  ┌──────────────┐
                  │  Developer   │
@@ -622,13 +625,13 @@ Docker Compose নতুন image দিয়ে container recreate করবে�
              │   │ Angular     │   │
              │   │ Test        │   │
              │   └──────┬──────┘   │
-             │          │           │
-             │       SUCCESS        │
-             │          │           │
-             │       Docker         │
-             │          │           │
-             │   Build API          │
-             │   Build Frontend     │
+             │          │          │
+             │       SUCCESS       │
+             │          │          │
+             │       Docker        │
+             │          │          │
+             │   Build API         │
+             │   Build Frontend    │
              └──────────┬──────────┘
                         │
                         ▼
@@ -664,10 +667,11 @@ Docker Compose নতুন image দিয়ে container recreate করবে�
               │ RabbitMQ           │
               │ SQL Server         │
               └────────────────────┘
+```
 15. CI আর CD আলাদা করে মনে রাখো
 
 CI = Code ঠিক আছে কিনা যাচাই + image তৈরি/push
-
+```text
 GitHub
  ↓
 Build
@@ -687,13 +691,14 @@ AWS
 docker compose pull
  ↓
 docker compose up -d
+```
 তোমার daily কাজ
 git add .
 git commit -m "my changes"
 git push origin main
 
 এরপর:
-
+```text
 GitHub Actions
       ↓
 CI
@@ -707,3 +712,4 @@ AWS
 Docker Compose
       ↓
 Production Updated
+```
