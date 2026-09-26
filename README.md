@@ -1,6 +1,7 @@
 BPS (.NET 8 Backend + Angular 20 Frontend) ধরে practical CI/CD + Docker Compose workflow
+
+## 1. Final Architecture
 ```text
-1. Final Architecture
                     DEVELOPER
                         │
                         │ git push
@@ -50,7 +51,7 @@ BPS (.NET 8 Backend + Angular 20 Frontend) ধরে practical CI/CD + Docker Co
           │ SQL Server               │
           └──────────────────────────┘
 ```
-2. Project Structure
+## 2. Project Structure
 
 GitHub repository এমন :
 ```text
@@ -75,10 +76,10 @@ BPS/
     └── workflows/
         └── deploy.yml
 ```
-3. Backend Dockerfile
+## 3. Backend Dockerfile
 
-Backend/Dockerfile
-
+## Backend/Dockerfile
+```bash
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
 WORKDIR /src
@@ -102,10 +103,11 @@ EXPOSE 8080
 COPY --from=build /app/publish .
 
 ENTRYPOINT ["dotnet", "BPS.API.dll"]
-4. Angular Dockerfile
+```
+## 4. Angular Dockerfile
 
-Frontend/Dockerfile
-
+## Frontend/Dockerfile
+```bash
 FROM node:22 AS build
 
 WORKDIR /app
@@ -128,13 +130,13 @@ COPY --from=build /app/dist/bps/browser /usr/share/nginx/html
 EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
-
+```
 dist/bps/browser - actual Angular build output অনুযায়ী পরিবর্তন করবে।
 
-5. Angular Nginx
+## 5. Angular Nginx
 
-Frontend/nginx.conf
-
+##Frontend/nginx.conf
+```bash
 server {
 
     listen 80;
@@ -150,7 +152,7 @@ server {
     }
 
 }
-
+```
 এটার কারণে Angular routing কাজ করবে।
 
 যেমন:
@@ -160,11 +162,13 @@ server {
 /admin/buses
 /admin/routes
 /admin/trips
-6. Docker Compose
+
+## 6. Docker Compose
 
 Root-এর:
 
-docker-compose.yml
+## docker-compose.yml
+```bash
 services:
 
   api:
@@ -244,7 +248,7 @@ services:
 
     volumes:
       - sqlserver_data:/var/opt/mssql
-
+```
 
 volumes:
 
@@ -253,10 +257,11 @@ volumes:
   rabbitmq_data:
 
   sqlserver_data:
-7. AWS .env
+  
+## 7. AWS .env
 
 AWS server-এ:
-
+```bash
 /opt/bps/.env
 IMAGE_TAG=latest
 
@@ -266,14 +271,15 @@ DB_CONNECTION_STRING=Server=sqlserver,1433;Database=BPS;User Id=sa;Password=Your
 
 RABBITMQ_USER=bpsuser
 RABBITMQ_PASSWORD=StrongRabbitPassword
-
+```
 এই .env GitHub-এ push করবে না।
-
+```bash
 .gitignore:
 
 .env
-8. GitHub Secrets
-
+```
+## 8. GitHub Secrets
+```text
 GitHub:
 
 Repository
@@ -283,7 +289,7 @@ Settings
 Secrets and variables
    ↓
 Actions
-
+```
 এই secrets রাখবে:
 
 DOCKER_USERNAME
@@ -292,12 +298,13 @@ DOCKER_PASSWORD
 AWS_HOST
 AWS_USERNAME
 AWS_SSH_KEY
-9. GitHub Actions Workflow
+
+## 9. GitHub Actions Workflow
 
 .github/workflows/deploy.yml
 
 এবার proper production workflow:
-
+```bash
 name: BPS CI/CD
 
 on:
@@ -492,9 +499,9 @@ jobs:
             echo "Deployment completed."
 
             docker compose ps
-
+```
             
-10. এখন আসল Workflow
+## 10. এখন আসল Workflow
 
 এখন developer হিসেবে শুধু এই কাজ করবে:
 
@@ -509,16 +516,17 @@ git commit -m "Update trip booking"
 git push origin main
 
 
-11. এরপর ভিতরে ভিতরে কী হবে?
+## 11. এরপর ভিতরে ভিতরে কী হবে?
 Step 1
 
 GitHub code receive করবে।
-
+```text
 git push
      ↓
 GitHub Repository
+```
 Step 2 — CI শুরু
-
+```text
 GitHub Actions:
 
 Checkout
@@ -530,7 +538,7 @@ Checkout
 Angular npm ci
    ↓
 Angular Production Build
-
+```
 যদি এখানে error হয়:
 
 ❌ CI FAILED
@@ -538,7 +546,7 @@ Angular Production Build
 তাহলে Docker image build হবে না।
 
 এটা গুরুত্বপূর্ণ।
-
+```text
 Code
  ↓
 Test/Build
@@ -546,7 +554,8 @@ Test/Build
 ❌ Error
  ↓
 STOP
-12. CI successful হলে Docker build
+```
+## 12. CI successful হলে Docker build
 CI SUCCESS
      ↓
 Docker Login
@@ -573,16 +582,16 @@ yourusername/bps-frontend:latest
 
 ও update হবে।
 
-13. তারপর CD
+## 13. তারপর CD
 
 Docker push successful হলে:
-
+```text
 GitHub Actions
       │
       │ SSH
       ▼
 AWS EC2
-
+```
 AWS-এ command চলবে:
 
 cd /opt/bps
@@ -599,7 +608,7 @@ docker compose up -d
 
 Docker Compose নতুন image দিয়ে container recreate করবে।
 
-14. Final deployment flow
+## 14. Final deployment flow
 
 পুরো বিষয়টা মনে রাখার জন্য:
 ```text
@@ -668,7 +677,7 @@ Docker Compose নতুন image দিয়ে container recreate করবে�
               │ SQL Server         │
               └────────────────────┘
 ```
-15. CI আর CD আলাদা করে মনে রাখো
+## 15. CI আর CD আলাদা করে মনে রাখো
 
 CI = Code ঠিক আছে কিনা যাচাই + image তৈরি/push
 ```text
