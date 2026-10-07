@@ -1,0 +1,22 @@
+# DEVELOPMENT — Hybrid pattern
+# Data → Named volume (নিরাপদ, দ্রুত)
+# Config/Seed → Bind mount (host থেকে সহজে edit করা যায়)
+# চালাও: docker compose -f docker-compose.dev.yml up -d
+services:
+  postgres:
+    image: postgres:17
+    container_name: pg-dev
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass      # শুধু local dev এর জন্য; production এ secret ব্যবহার করো
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data              # Data → Named volume
+      - ./initdb:/docker-entrypoint-initdb.d:ro          # Seed SQL (read-only bind)
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro   # একটা single file mount
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+volumes:
+  pgdata_dev:

@@ -1,0 +1,57 @@
+# PRODUCTION — PostgreSQL (Named Volume)
+# চালানোর আগে: secrets/db_password.txt বানাও (README দেখো)
+#   printf 'YourStrongPassword' > secrets/db_password.txt && chmod 600 secrets/db_password.txt
+# চালাও: docker compose up -d
+services:
+  postgres:
+    image: postgres:17.2              # 'latest' নয়, নির্দিষ্ট version pin করো
+    container_name: pg-prod
+    restart: unless-stopped           # Host reboot এর পর আবার চালু হবে
+    environment:
+      POSTGRES_USER: appuser
+      POSTGRES_DB: appdb
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password   # password file থেকে পড়ে
+      PGDATA: /var/lib/postgresql/data/pgdata            # lost+found সমস্যা এড়াতে subdirectory
+    secrets:
+      - db_password
+    volumes:
+      - pgdata:/var/lib/postgresql/data                  # ① Named volume (আসল data)
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro   # ② Config (read-only)
+      - ./initdb:/docker-entrypoint-initdb.d:ro          # ③ Init script (শুধু প্রথমবার চলে)
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    ports:
+      - "127.0.0.1:5432:5432"         # শুধু localhost এ expose
+    shm_size: 256mb                   # Postgres shared memory (default 64MB কম)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 60s            # নিরাপদে shutdown এর সময়
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+    name: myapp_pgdata                # নির্দিষ্ট নাম (project prefix ছাড়া)
+    labels:
+      app: myapp
+      backup: "daily"
+
+networks:
+  backend:
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt   # ⚠️ Git এ commit করো না

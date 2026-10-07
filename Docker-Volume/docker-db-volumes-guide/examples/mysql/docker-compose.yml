@@ -1,0 +1,31 @@
+# PRODUCTION — MySQL (Named Volume)
+# চালানোর আগে: printf 'RootPass' > secrets/mysql_root_password.txt && chmod 600 secrets/mysql_root_password.txt
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
+      MYSQL_DATABASE: appdb
+    secrets:
+      - mysql_root_password
+    volumes:
+      - mysqldata:/var/lib/mysql                          # Data → Named volume
+      - ./config/my.cnf:/etc/mysql/conf.d/custom.cnf:ro   # Custom config (শুধু একটা file)
+    ports:
+      - "127.0.0.1:3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    stop_grace_period: 60s
+
+volumes:
+  mysqldata:
+
+secrets:
+  mysql_root_password:
+    file: ./secrets/mysql_root_password.txt

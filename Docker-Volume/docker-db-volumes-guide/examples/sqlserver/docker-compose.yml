@@ -1,0 +1,29 @@
+# PRODUCTION — SQL Server (Named Volume)
+# চালানোর আগে: .env file বানাও (.env.example দেখো) — SA password সেখান থেকে আসবে।
+# SQL Server এর password policy: কমপক্ষে ৮ অক্ষর, বড়/ছোট হাতের অক্ষর, সংখ্যা ও চিহ্ন।
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql-prod
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?MSSQL_SA_PASSWORD সেট করো (.env file এ)}
+    volumes:
+      - sqldata:/var/opt/mssql        # Data, log ও backup — সব এখানে
+    ports:
+      - "127.0.0.1:1433:1433"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G                  # SQL Server এর ন্যূনতম প্রয়োজন ২GB RAM
+
+volumes:
+  sqldata:

@@ -1,0 +1,32 @@
+# PRODUCTION — MongoDB (Named Volume)
+# চালানোর আগে: printf 'MongoPass' > secrets/mongo_root_password.txt && chmod 600 secrets/mongo_root_password.txt
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo-prod
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/mongo_root_password
+    secrets:
+      - mongo_root_password
+    volumes:
+      - mongodata:/data/db            # Database files
+      - mongoconfig:/data/configdb    # Config database (এটাও আলাদা volume)
+    ports:
+      - "127.0.0.1:27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 60s
+
+volumes:
+  mongodata:
+  mongoconfig:
+
+secrets:
+  mongo_root_password:
+    file: ./secrets/mongo_root_password.txt
