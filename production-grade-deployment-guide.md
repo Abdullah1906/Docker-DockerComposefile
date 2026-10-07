@@ -315,8 +315,5 @@ docker compose -f docker-compose.prod.yml down
 - [ ] HTTPS/SSL (Let's Encrypt) কনফিগার করা হয়েছে
 - [ ] `sa` এর বদলে সীমিত অনুমতিসহ আলাদা DB ইউজার ব্যবহার করা হয়েছে
 - [ ] ডাটাবেজ ব্যাকআপ (volume snapshot / `BACKUP DATABASE`) নির্ধারিত আছে
-- [ ] লগিং ও মনিটরিং (Prometheus, Grafana, Seq ইত্যাদি) সেট করা হয়েছে
-- [ ] Angular SPA রাউটিংয়ের জন্য ফ্রন্টএন্ড Nginx-এ `try_files $uri /index.html;` যোগ করা হয়েছে
-- [ ] সত্যিকারের মাল্টি-নোড HA দরকার হলে Docker Swarm বা Kubernetes-এ মাইগ্রেট করার পরিকল্পনা আছে
 
 ---
