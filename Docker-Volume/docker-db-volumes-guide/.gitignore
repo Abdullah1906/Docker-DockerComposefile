@@ -1,0 +1,21 @@
+# Database data (কখনো Git এ যাবে না)
+data/
+backups/
+*.dump
+*.bak
+*.sql.gz
+*.tar.gz
+
+# Secrets (শুধু .gitkeep থাকবে)
+**/secrets/*
+!**/secrets/.gitkeep
+.env
+*.env
+!.env.example
+!**/.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
